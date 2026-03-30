@@ -87,45 +87,51 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
   return (
     <div className="flex flex-col h-full w-full bg-white rounded-lg shadow-inner relative overflow-hidden">
       {isDrawingMode && (
-        <div className="absolute top-4 left-4 flex flex-col gap-2 bg-gray-100 p-2 rounded-lg shadow-md z-10">
+        <div className="absolute top-4 left-4 flex flex-col gap-2 bg-gradient-to-b from-white to-gray-100 p-3 rounded-lg shadow-lg z-10 border border-gray-200">
+          <div className="text-xs font-bold text-gray-600 px-2 mb-1">工具栏</div>
           <button
             onClick={() => setTool('pencil')}
-            className={`p-2 rounded ${tool === 'pencil' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`}
-            title="Pencil"
+            className={`p-2 rounded-lg transition-all ${tool === 'pencil' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
+            title="铅笔"
           >
             <Pencil size={20} />
           </button>
           <button
             onClick={() => setTool('eraser')}
-            className={`p-2 rounded ${tool === 'eraser' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`}
-            title="Eraser"
+            className={`p-2 rounded-lg transition-all ${tool === 'eraser' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
+            title="橡皮擦"
           >
             <Eraser size={20} />
           </button>
           <button
             onClick={clearCanvas}
-            className="p-2 rounded bg-white text-red-500 hover:bg-red-50"
-            title="Clear All"
+            className="p-2 rounded-lg bg-white text-red-500 hover:bg-red-50 border border-gray-200 transition-all"
+            title="清空"
           >
             <Trash2 size={20} />
           </button>
-          <div className="mt-2 flex flex-col gap-1">
+          <div className="border-t border-gray-200 mt-2 pt-2">
+            <label className="text-xs font-bold text-gray-600 block px-2 mb-2">颜色</label>
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-8 h-8 cursor-pointer"
+              className="w-full h-8 cursor-pointer rounded-lg border border-gray-300"
             />
           </div>
-          <div className="mt-2 flex flex-col gap-1">
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={brushSize}
-              onChange={(e) => setBrushSize(parseInt(e.target.value))}
-              className="w-20"
-            />
+          <div className="border-t border-gray-200 mt-2 pt-2">
+            <label className="text-xs font-bold text-gray-600 block px-2 mb-2">笔刷大小</label>
+            <div className="flex items-center gap-2 px-2">
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={brushSize}
+                onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded">{brushSize}</span>
+            </div>
           </div>
         </div>
       )}
