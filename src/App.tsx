@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Canvas from './components/Canvas';
 import Chat from './components/Chat';
-import { Trophy, Timer, User, LayoutGrid, Sparkles } from 'lucide-react';
+import { Trophy, Timer, User, LayoutGrid, Sparkles, Pencil } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -28,39 +28,55 @@ function App() {
   ]);
   const [currentWord, setCurrentWord] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
+  const [roundEnd, setRoundEnd] = useState(false);
+
+  const startNewRound = useCallback(() => {
+    setCurrentWord(WORDS[Math.floor(Math.random() * WORDS.length)]);
+    setTimeLeft(60);
+    setMessages([]);
+    setRoundEnd(false);
+  }, []);
 
   useEffect(() => {
-    // 初始化游戏
-    setCurrentWord(WORDS[Math.floor(Math.random() * WORDS.length)]);
-    
+    startNewRound();
+  }, [startNewRound]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setRoundEnd(true);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = useCallback((text: string) => {
     const isCorrect = text === currentWord;
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       sender: '我 (玩家1)',
-      text: isCorrect ? '猜对了！答案是：' + text : text,
+      text: isCorrect ? '🎉 猜对了！答案是：' + text : text,
       isCorrect,
     };
     
     setMessages((prev) => [...prev, newMessage]);
 
     if (isCorrect) {
-      // 更新分数逻辑
       setPlayers((prev) =>
         prev.map((p) =>
           p.id === '1' ? { ...p, score: p.score + 100 } : p
         )
       );
-      // 可以在这里处理回合结束逻辑
+      setTimeout(() => {
+        setRoundEnd(true);
+      }, 1500);
     }
-  };
+  }, [currentWord]);
 
   const isDrawingMode = players.find(p => p.id === '1')?.isDrawing || false;
 
@@ -148,12 +164,28 @@ function App() {
         </div>
       </main>
 
+      {/* Round End Modal */}
+      {roundEnd && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-md">
+            <h2 className="text-2xl font-black text-gray-800 mb-2">回合结束</h2>
+            <p className="text-gray-600 mb-6">答案是：<span className="text-2xl font-bold text-blue-600">{currentWord}</span></p>
+            <button
+              onClick={startNewRound}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all"
+            >
+              开始下一回合
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer / Controls */}
       <footer className="w-full max-w-6xl flex justify-between items-center text-sm text-gray-600 font-medium bg-white bg-opacity-60 backdrop-blur-sm rounded-xl px-6 py-4 shadow-md">
         <div className="flex gap-4 text-gray-600">
           <span>📋 规则: 猜中得 100 分</span>
           <span>•</span>
-          <span>🚀 正在开发中...</span>
+          <span>🎨 轮流作画和猜题</span>
         </div>
         <div className="flex items-center gap-2 text-purple-600 font-bold hover:text-purple-700 transition-colors cursor-pointer">
           <Trophy size={16} />
@@ -163,24 +195,5 @@ function App() {
     </div>
   );
 }
-
-// Helper icon for player list
-const Pencil = ({ size, className }: { size: number, className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-    <path d="m15 5 4 4"/>
-  </svg>
-);
 
 export default App;

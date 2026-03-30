@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send } from 'lucide-react';
 
 interface ChatMessage {
@@ -18,21 +18,21 @@ const Chat: React.FC<ChatProps> = ({ messages, onSendMessage, isDrawingMode }) =
   const [inputValue, setInputValue] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       onSendMessage(inputValue.trim());
       setInputValue('');
     }
-  };
+  }, [inputValue, onSendMessage]);
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-lg overflow-hidden border-0">

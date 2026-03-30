@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Eraser, Pencil, Trash2 } from 'lucide-react';
 
 interface CanvasProps {
@@ -36,21 +36,21 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
     return () => window.removeEventListener('resize', resizeCanvas);
   }, []);
 
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+  const startDrawing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawingMode) return;
     setIsDrawing(true);
     draw(e);
-  };
+  }, [isDrawingMode]);
 
-  const stopDrawing = () => {
+  const stopDrawing = useCallback(() => {
     setIsDrawing(false);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx?.beginPath();
-  };
+  }, []);
 
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+  const draw = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing || !isDrawingMode) return;
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -74,18 +74,20 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x, y);
-  };
+  }, [isDrawing, isDrawingMode, brushSize, color, tool]);
 
-  const clearCanvas = () => {
+  const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (canvas && ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
     }
-  };
+  }, []);
 
   return (
-    <div className="flex flex-col h-full w-full bg-white rounded-lg shadow-inner relative overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-white overflow-hidden relative">
       {isDrawingMode && (
         <div className="absolute top-4 left-4 flex flex-col gap-2 bg-gradient-to-b from-white to-gray-100 p-3 rounded-lg shadow-lg z-10 border border-gray-200">
           <div className="text-xs font-bold text-gray-600 px-2 mb-1">工具栏</div>
