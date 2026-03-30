@@ -38,8 +38,26 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
 
   const startDrawing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawingMode) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    let x;
+    let y;
+
+    if ('touches' in e) {
+      x = e.touches[0].clientX - rect.left;
+      y = e.touches[0].clientY - rect.top;
+    } else {
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
     setIsDrawing(true);
-    draw(e);
   }, [isDrawingMode]);
 
   const stopDrawing = useCallback(() => {
@@ -87,42 +105,42 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
   }, []);
 
   return (
-    <div className="flex flex-col h-full w-full bg-white overflow-hidden relative">
+    <div className="flex h-full w-full flex-col overflow-hidden rounded-[32px] bg-[linear-gradient(180deg,rgba(255,251,245,0.9),rgba(255,241,230,0.85))] pt-16 relative">
       {isDrawingMode && (
-        <div className="absolute top-4 left-4 flex flex-col gap-2 bg-gradient-to-b from-white to-gray-100 p-3 rounded-lg shadow-lg z-10 border border-gray-200">
-          <div className="text-xs font-bold text-gray-600 px-2 mb-1">工具栏</div>
+        <div className="fairy-panel absolute left-4 top-4 z-10 flex flex-col gap-2 rounded-[24px] border border-[#ecd1af] bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,242,229,0.9))] p-3 shadow-[0_20px_34px_rgba(155,108,73,0.18)]">
+          <div className="px-2 text-xs font-extrabold uppercase tracking-[0.24em] text-[#b77554]">工具栏</div>
           <button
             onClick={() => setTool('pencil')}
-            className={`p-2 rounded-lg transition-all ${tool === 'pencil' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
+            className={`rounded-[16px] p-2 transition-all ${tool === 'pencil' ? 'border border-[#efc590] bg-[linear-gradient(135deg,#f2be68,#ee8d74)] text-white shadow-[0_12px_24px_rgba(214,130,87,0.28)]' : 'border border-[#ead8c9] bg-white/85 text-[#86543d] hover:bg-[#fff7f0]'}`}
             title="铅笔"
           >
             <Pencil size={20} />
           </button>
           <button
             onClick={() => setTool('eraser')}
-            className={`p-2 rounded-lg transition-all ${tool === 'eraser' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
+            className={`rounded-[16px] p-2 transition-all ${tool === 'eraser' ? 'border border-[#efc590] bg-[linear-gradient(135deg,#f2be68,#ee8d74)] text-white shadow-[0_12px_24px_rgba(214,130,87,0.28)]' : 'border border-[#ead8c9] bg-white/85 text-[#86543d] hover:bg-[#fff7f0]'}`}
             title="橡皮擦"
           >
             <Eraser size={20} />
           </button>
           <button
             onClick={clearCanvas}
-            className="p-2 rounded-lg bg-white text-red-500 hover:bg-red-50 border border-gray-200 transition-all"
+            className="rounded-[16px] border border-[#ead8c9] bg-white/85 p-2 text-[#cb6a63] transition-all hover:bg-[#fff2ef]"
             title="清空"
           >
             <Trash2 size={20} />
           </button>
-          <div className="border-t border-gray-200 mt-2 pt-2">
-            <label className="text-xs font-bold text-gray-600 block px-2 mb-2">颜色</label>
+          <div className="mt-2 border-t border-[#efdcc5] pt-2">
+            <label className="mb-2 block px-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#b77554]">颜色</label>
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-full h-8 cursor-pointer rounded-lg border border-gray-300"
+              className="h-9 w-full cursor-pointer rounded-[14px] border border-[#ecd1af] bg-white p-1"
             />
           </div>
-          <div className="border-t border-gray-200 mt-2 pt-2">
-            <label className="text-xs font-bold text-gray-600 block px-2 mb-2">笔刷大小</label>
+          <div className="mt-2 border-t border-[#efdcc5] pt-2">
+            <label className="mb-2 block px-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#b77554]">笔刷大小</label>
             <div className="flex items-center gap-2 px-2">
               <input
                 type="range"
@@ -130,9 +148,9 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
                 max="20"
                 value={brushSize}
                 onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                className="flex-1"
+                className="accent-[#df8d6e] flex-1"
               />
-              <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded">{brushSize}</span>
+              <span className="rounded-full bg-white/80 px-2 py-1 text-xs font-black text-[#8f6345] shadow-sm">{brushSize}</span>
             </div>
           </div>
         </div>
@@ -146,7 +164,7 @@ const Canvas: React.FC<CanvasProps> = ({ isDrawingMode }) => {
         onTouchStart={startDrawing}
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
-        className={`w-full h-full touch-none ${isDrawingMode ? 'cursor-crosshair' : 'cursor-default'}`}
+        className={`h-full w-full touch-none bg-white ${isDrawingMode ? 'cursor-crosshair' : 'cursor-default'}`}
       />
     </div>
   );
