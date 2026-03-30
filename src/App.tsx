@@ -28,7 +28,6 @@ function App() {
   ]);
   const [currentWord, setCurrentWord] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
-  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'round_end'>('playing');
 
   useEffect(() => {
     // 初始化游戏
